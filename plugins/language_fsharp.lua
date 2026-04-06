@@ -8,22 +8,26 @@ syntax.add {
   name = "F#",
   files = { "%.fs$", "%.fsi$", "%.fsx$" },
   comment = "//",
+  block_comment = { "(*", "*)" },
 
   patterns = {
     -- comments
-    { pattern = "//.-\n", type = "comment" },
+    { pattern = "//.*", type = "comment" },
     { pattern = { "%(%*", "%*%)" }, type = "comment" },
 
     -- attributes [<EntryPoint>]
-    { pattern = "%[%<.-%>%]", type = "keyword" },
+    { pattern = { "%[%<", "%>%]" }, type = "keyword" },
 
     -- backtick identifiers ``identifier with spaces``
-    { pattern = "``.-``", type = "symbol" },
+    { pattern = { "``", "``" }, type = "symbol" },
 
     -- strings
     { pattern = { '"', '"', '\\' }, type = "string" },
     { pattern = "'\\?.'", type = "string" },
-    { regex   = "\\${1,2}(?=\"?\'?)", type = "string"    },
+
+    -- interpolated strings (single-line, normal and verbatim)
+    { pattern = [[%$@?"(\\.|[^"\\])*"]], type = "string" },
+    { pattern = [[%$@?"""(.-)"""]], type = "string" },
 
     -- numbers
     { pattern = "-?0x%x+", type = "number" },
@@ -32,7 +36,6 @@ syntax.add {
 
     -- operators
     { pattern = "%-%>", type = "operator" },   -- ->
-    { pattern = "%|", type = "operator" },     -- |
     { pattern = "[%+%-=/%*%^%%<>!~|&@:]", type = "operator" },
 
     -- active patterns (|A|B|)
@@ -45,10 +48,10 @@ syntax.add {
     { pattern = "[%a_][%w_']*", type = "symbol" },
 
     -- etc.
-    { regex   = "\\w+(?=\\s*[(])", type = "function"  },
-    { regex   = "\\w+()\\s?\\[?\\<\\'?\\w+\\>\\]?", type = { "function", "keyword2" } },
-    { regex   = "\\#\\w+", type = "keyword2"  }, 
-    { regex   = "\\'\\w+", type = "keyword2"  }, 
+    { regex = [[%w+%s*%()]], type = "function" },
+    { regex = [[%w+%s*%[?<\'?%w+>%]?]], type = { "function", "keyword2" } },
+    { regex = [[#\w+]], type = "keyword2" },
+    { regex = [['\w+]], type = "keyword2" },
   },
 
   symbols = {
